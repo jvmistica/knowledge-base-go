@@ -4,12 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"github.com/jvmistica/knowledge-base-go/pkg/dashboard"
 	"github.com/jvmistica/knowledge-base-go/pkg/note"
 	"github.com/jvmistica/knowledge-base-go/pkg/recipe"
 	"github.com/jvmistica/knowledge-base-go/pkg/script"
 	"github.com/jvmistica/knowledge-base-go/pkg/search"
+)
+
+var (
+	db *gorm.DB
 )
 
 func handleRequests() {
@@ -28,6 +36,20 @@ func handleRequests() {
 }
 
 func main() {
+	host := os.Getenv("POSTGRES_HOST")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASS")
+	database := os.Getenv("POSTGRES_DB")
+
+	// Connect to the database
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
+		host, user, password, database, port)
+	_, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	handleRequests()
 }
 
