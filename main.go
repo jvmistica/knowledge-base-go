@@ -1,63 +1,23 @@
 package main
 
 import (
-	// "encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/jvmistica/knowledge-base-go/pkg/note"
-	"github.com/jvmistica/knowledge-base-go/pkg/recipe"
-	"github.com/jvmistica/knowledge-base-go/pkg/script"
+	"github.com/jvmistica/knowledge-base-go/pkg/record"
 )
 
-// TODO: Use struct once all controllers are implemented
-var (
-	DB *gorm.DB
-)
-
-type Note struct {
-	ID          uint
-	Name        string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
-type Recipe struct {
-	ID          uint
-	Name        string
-	Description string
-	Instruction string
-	Category    string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
-type Script struct {
-	ID          uint
-	Name        string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
-func handleRequests() {
+func handleRequests(r *record.Record) {
 	http.HandleFunc("/", homePage)
 
-	http.HandleFunc("/notes", notesPage)
-	http.HandleFunc("/notes/new", note.NewNote)
-
-	http.HandleFunc("/recipes", recipesPage)
-	http.HandleFunc("/recipes/new", recipe.NewRecipe)
-
-	http.HandleFunc("/scripts", scriptsPage)
-	http.HandleFunc("/scripts/new", script.NewScript)
+	http.HandleFunc("/notes", r.GetNotes)
+	http.HandleFunc("/recipes", r.GetRecipes)
+	http.HandleFunc("/scripts", r.GetScripts)
 
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
@@ -78,51 +38,17 @@ func main() {
 	}
 
 	// Migrate the tables
-	db.AutoMigrate(&Recipe{})
+	db.AutoMigrate(&record.Note{})
+	db.AutoMigrate(&record.Recipe{})
+	db.AutoMigrate(&record.Script{})
 
-	DB = db
+	r := record.NewRecord(db)
 
-	handleRequests()
+	handleRequests(r)
 }
 
 // Modules
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
 	fmt.Println("Endpoint Hit: homePage")
-}
-
-func notesPage(w http.ResponseWriter, r *http.Request) {
-	var notes []Note
-	_ = DB.Find(&notes)
-
-	var records string
-	for _, n := range notes {
-		records += fmt.Sprintf("%s\n", n.Name)
-	}
-
-	w.Write([]byte(records))
-}
-
-func recipesPage(w http.ResponseWriter, r *http.Request) {
-	var recipes []Recipe
-	_ = DB.Find(&recipes)
-
-	var records string
-	for _, r := range recipes {
-		records += fmt.Sprintf("%s\n", r.Name)
-	}
-
-	w.Write([]byte(records))
-}
-
-func scriptsPage(w http.ResponseWriter, r *http.Request) {
-	var scripts []Script
-	_ = DB.Find(&scripts)
-
-	var records string
-	for _, s := range scripts {
-		records += fmt.Sprintf("%s\n", s.Name)
-	}
-
-	w.Write([]byte(records))
 }
