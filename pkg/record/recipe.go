@@ -18,7 +18,10 @@ type Recipe struct {
 
 func (re *Record) GetRecipes(w http.ResponseWriter, r *http.Request) {
 	var recipes []Recipe
-	_ = re.DB.Find(&recipes)
+	if res := re.DB.Find(&recipes); res.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)
+		return
+	}
 
 	var records string
 	for _, r := range recipes {

@@ -16,7 +16,10 @@ type Note struct {
 
 func (re *Record) GetNotes(w http.ResponseWriter, r *http.Request) {
 	var notes []Note
-	_ = re.DB.Find(&notes)
+	if res := re.DB.Find(&notes); res.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)
+		return
+	}
 
 	var records string
 	for _, n := range notes {

@@ -16,7 +16,10 @@ type Script struct {
 
 func (re *Record) GetScripts(w http.ResponseWriter, r *http.Request) {
 	var scripts []Script
-	_ = re.DB.Find(&scripts)
+	if res := re.DB.Find(&scripts); res.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)
+		return
+	}
 
 	var records string
 	for _, s := range scripts {
