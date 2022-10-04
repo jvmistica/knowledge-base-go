@@ -38,10 +38,7 @@ func main() {
 	}
 
 	// Migrate the tables
-	db.AutoMigrate(&record.Note{})
-	db.AutoMigrate(&record.Recipe{})
-	db.AutoMigrate(&record.Script{})
-
+	db.AutoMigrate(&record.Note{}, &record.Recipe{}, &record.Script{})
 	r := record.NewRecord(db)
 
 	handleRequests(r)
