@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Recipe is the structure of the recipes table
 type Recipe struct {
 	ID          uint
 	Name        string
@@ -16,7 +17,8 @@ type Recipe struct {
 	UpdatedAt   time.Time
 }
 
-func (re *Record) GetRecipes(w http.ResponseWriter, r *http.Request) {
+// ListRecipes lists all the recipes in the database
+func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	var recipes []Recipe
 	if res := re.DB.Find(&recipes); res.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Note is the structure of the notes table
 type Note struct {
 	ID          uint
 	Name        string
@@ -14,7 +15,8 @@ type Note struct {
 	UpdatedAt   time.Time
 }
 
-func (re *Record) GetNotes(w http.ResponseWriter, r *http.Request) {
+// ListNotes lists all the notes in the database
+func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 	var notes []Note
 	if res := re.DB.Find(&notes); res.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)

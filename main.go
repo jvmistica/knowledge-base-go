@@ -13,12 +13,13 @@ import (
 	"github.com/jvmistica/knowledge-base-go/pkg/record"
 )
 
+// handleRequests handles all the request to the APIs
 func handleRequests(r *record.Record) {
-	http.HandleFunc("/", homePage)
+	http.HandleFunc("/", record.GetHome)
 
-	http.HandleFunc("/notes", r.GetNotes)
-	http.HandleFunc("/recipes", r.GetRecipes)
-	http.HandleFunc("/scripts", r.GetScripts)
+	http.HandleFunc("/notes", r.ListNotes)
+	http.HandleFunc("/recipes", r.ListRecipes)
+	http.HandleFunc("/scripts", r.ListScripts)
 
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
@@ -97,10 +98,4 @@ func main() {
 	}
 
 	handleRequests(r)
-}
-
-// Modules
-func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
-	fmt.Println("Endpoint Hit: homePage")
 }
