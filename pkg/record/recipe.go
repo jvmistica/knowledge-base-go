@@ -37,3 +37,11 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 }
+
+// CreateRecipe creates a new recipe
+func (re *Record) CreateRecipe(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`Invalid method`))
+	}
+}

@@ -35,3 +35,11 @@ func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 }
+
+// CreateScript creates a new recipe
+func (re *Record) CreateScript(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`Invalid method`))
+	}
+}

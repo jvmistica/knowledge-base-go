@@ -35,3 +35,11 @@ func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 }
+
+// CreateNote creates a new note
+func (re *Record) CreateNote(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`Invalid method`))
+	}
+}
