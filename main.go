@@ -54,7 +54,9 @@ func init() {
 	}
 
 	// Migrate the tables
-	db.AutoMigrate(&record.Note{}, &record.Recipe{}, &record.Script{})
+	if err := db.AutoMigrate(&record.Note{}, &record.Recipe{}, &record.Script{}); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {

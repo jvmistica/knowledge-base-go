@@ -2,6 +2,7 @@ package record
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -28,5 +29,7 @@ func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 		records += fmt.Sprintf("%s\n", n.Name)
 	}
 
-	w.Write([]byte(records))
+	if _, err := w.Write([]byte(records)); err != nil {
+		log.Fatal(err)
+	}
 }

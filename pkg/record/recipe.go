@@ -2,6 +2,7 @@ package record
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -30,5 +31,7 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 		records += fmt.Sprintf("%s\n", r.Name)
 	}
 
-	w.Write([]byte(records))
+	if _, err := w.Write([]byte(records)); err != nil {
+		log.Fatal(err)
+	}
 }
