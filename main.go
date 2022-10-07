@@ -63,53 +63,9 @@ func main() {
 
 	// Seed database
 	if *seed {
-		notes := []record.Note{
-			{
-				Name:        "Sample note 1",
-				Description: "Some description about sample note 1",
-			},
-			{
-				Name:        "Sample note 2",
-				Description: "Some description about sample note 2",
-			},
-			{
-				Name:        "Sample note 3",
-				Description: "Some description about sample note 3",
-			},
-		}
-		db.Create(&notes)
-
-		recipes := []record.Recipe{
-			{
-				Name:        "Adobo",
-				Description: "A meat dish with soy sauce, vinegar, garlic, and peppercorns.",
-			},
-			{
-				Name:        "Rice ball",
-				Description: "A simple snack made of rice, seaweed, and fillings.",
-			},
-			{
-				Name:        "Chicken curry",
-				Description: "A chicken dish with potatoes, carrots, and breaded fried chicken.",
-			},
-		}
-		db.Create(&recipes)
-
-		scripts := []record.Script{
-			{
-				Name:        "Sample script 1",
-				Description: "Some description about sample script 1",
-			},
-			{
-				Name:        "Sample script 2",
-				Description: "Some description about sample script 2",
-			},
-			{
-				Name:        "Sample script 3",
-				Description: "Some description about sample script 3",
-			},
-		}
-		db.Create(&scripts)
+		db.Create(&record.Notes)
+		db.Create(&record.Recipes)
+		db.Create(&record.Scripts)
 	}
 
 	handleRequests()
