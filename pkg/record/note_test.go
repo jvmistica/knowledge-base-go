@@ -36,25 +36,25 @@ func TestListNotes(t *testing.T) {
 	})
 
 	t.Run("successful: one record", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "sample note #123", "description": "noice"}}
+		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
 		r.ListNotes(rw, &http.Request{})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "sample note #123\n", string(res))
+		assert.Equal(t, "<b>Sample note #123</b></br>A reminder to buy a list of grocery items</br></br>", string(res))
 	})
 
 	t.Run("successful: multiple records", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "sample note #123", "description": "noice"},
-			{"name": "sample note #234", "description": "wow"}}
+		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
+			{"title": "Sample note #234", "content": "Notes on how to do something"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
 		r.ListNotes(rw, &http.Request{})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "sample note #123\nsample note #234\n", string(res))
+		assert.Equal(t, "<b>Sample note #123</b></br>A reminder to buy a list of grocery items</br></br><b>Sample note #234</b></br>Notes on how to do something</br></br>", string(res))
 	})
 }

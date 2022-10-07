@@ -9,11 +9,11 @@ import (
 
 // Note is the structure of the notes table
 type Note struct {
-	ID          uint
-	Name        string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID        uint
+	Title     string
+	Content   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // ListNotes lists all the notes in the database
@@ -25,8 +25,10 @@ func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var records string
-	for _, n := range notes {
-		records += fmt.Sprintf("%s\n", n.Name)
+	if len(notes) > 0 {
+		for _, n := range notes {
+			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", n.Title, n.Content)
+		}
 	}
 
 	if _, err := w.Write([]byte(records)); err != nil {

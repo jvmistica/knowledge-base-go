@@ -2,16 +2,16 @@ package record
 
 var Notes = []Note{
 	{
-		Name:        "Sample note 1",
-		Description: "Some description about sample note 1",
+		Title:   "Sample note 1",
+		Content: "Some description about sample note 1",
 	},
 	{
-		Name:        "Sample note 2",
-		Description: "Some description about sample note 2",
+		Title:   "Sample note 2",
+		Content: "Some description about sample note 2",
 	},
 	{
-		Name:        "Sample note 3",
-		Description: "Some description about sample note 3",
+		Title:   "Sample note 3",
+		Content: "Some description about sample note 3",
 	},
 }
 

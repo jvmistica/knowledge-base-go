@@ -25,25 +25,25 @@ func TestListRecipes(t *testing.T) {
 	})
 
 	t.Run("successful: one record", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "sample recipe #123", "description": "noice"}}
+		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{})
+		r.ListRecipes(rw, &http.Request{})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "sample recipe #123\n", string(res))
+		assert.Equal(t, "<b>Sample recipe #123</b></br>A very delicious dish</br></br>", string(res))
 	})
 
 	t.Run("successful: multiple records", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "sample recipe #123", "description": "noice"},
-			{"name": "sample recipe #234", "description": "wow"}}
+		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"},
+			{"name": "Sample recipe #234", "description": "An exotic dish"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{})
+		r.ListRecipes(rw, &http.Request{})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "sample recipe #123\nsample recipe #234\n", string(res))
+		assert.Equal(t, "<b>Sample recipe #123</b></br>A very delicious dish</br></br><b>Sample recipe #234</b></br>An exotic dish</br></br>", string(res))
 	})
 }

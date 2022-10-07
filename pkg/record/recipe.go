@@ -27,8 +27,10 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var records string
-	for _, r := range recipes {
-		records += fmt.Sprintf("%s\n", r.Name)
+	if len(recipes) > 0 {
+		for _, r := range recipes {
+			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", r.Name, r.Description)
+		}
 	}
 
 	if _, err := w.Write([]byte(records)); err != nil {

@@ -25,8 +25,10 @@ func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var records string
-	for _, s := range scripts {
-		records += fmt.Sprintf("%s\n", s.Name)
+	if len(scripts) > 0 {
+		for _, s := range scripts {
+			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", s.Name, s.Description)
+		}
 	}
 
 	if _, err := w.Write([]byte(records)); err != nil {
