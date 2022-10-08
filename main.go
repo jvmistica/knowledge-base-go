@@ -13,6 +13,8 @@ import (
 	"github.com/jvmistica/knowledge-base-go/pkg/record"
 )
 
+const apiVersion = "/api/v1"
+
 var (
 	db  *gorm.DB
 	err error
@@ -77,18 +79,18 @@ func main() {
 func handleRequests() {
 	r := record.NewRecord(db)
 
-	http.HandleFunc("/", record.GetHome)
-	http.HandleFunc("/notes", r.ListNotes)
-	http.HandleFunc("/recipes", r.ListRecipes)
-	http.HandleFunc("/scripts", r.ListScripts)
+	http.HandleFunc(apiVersion+"/", record.GetHome)
+	http.HandleFunc(apiVersion+"/notes", r.ListNotes)
+	http.HandleFunc(apiVersion+"/recipes", r.ListRecipes)
+	http.HandleFunc(apiVersion+"/scripts", r.ListScripts)
 
-	http.HandleFunc("/notes/new", r.CreateNote)
-	http.HandleFunc("/recipes/new", r.CreateRecipe)
-	http.HandleFunc("/scripts/new", r.CreateScript)
+	http.HandleFunc(apiVersion+"/notes/new", r.CreateNote)
+	http.HandleFunc(apiVersion+"/recipes/new", r.CreateRecipe)
+	http.HandleFunc(apiVersion+"/scripts/new", r.CreateScript)
 
-	http.HandleFunc("/notes/delete", r.DeleteNote)
-	http.HandleFunc("/recipes/delete", r.DeleteRecipe)
-	http.HandleFunc("/scripts/delete", r.DeleteScript)
+	http.HandleFunc(apiVersion+"/notes/delete", r.DeleteNote)
+	http.HandleFunc(apiVersion+"/recipes/delete", r.DeleteRecipe)
+	http.HandleFunc(apiVersion+"/scripts/delete", r.DeleteScript)
 
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
