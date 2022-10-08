@@ -86,5 +86,9 @@ func handleRequests() {
 	http.HandleFunc("/recipes/new", r.CreateRecipe)
 	http.HandleFunc("/scripts/new", r.CreateScript)
 
+	http.HandleFunc("/notes/delete", r.DeleteNote)
+	http.HandleFunc("/recipes/delete", r.DeleteRecipe)
+	http.HandleFunc("/scripts/delete", r.DeleteScript)
+
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }

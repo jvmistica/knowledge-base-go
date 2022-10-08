@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -27,7 +28,7 @@ func TestListNotes(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: no invalid method", func(t *testing.T) {
+	t.Run("error: invalid method", func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.ListNotes(rw, &http.Request{Method: http.MethodPost})
 
@@ -93,7 +94,7 @@ func TestCreateNote(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: no invalid method", func(t *testing.T) {
+	t.Run("error: invalid method", func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.CreateNote(rw, &http.Request{Method: http.MethodGet})
 
@@ -109,5 +110,43 @@ func TestCreateNote(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusCreated, rw.Code)
+	})
+}
+
+func TestDeleteNote(t *testing.T) {
+	db := setupTestDB()
+	r := &Record{DB: db}
+
+	t.Run("error: invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.DeleteNote(rw, &http.Request{Method: http.MethodPost})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
+
+	t.Run("error: record not found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
+		r.DeleteNote(rw, &http.Request{
+			Method: http.MethodDelete,
+			URL: &url.URL{
+				RawQuery: "id=99",
+			},
+		})
+
+		assert.Equal(t, http.StatusNotFound, rw.Code)
+	})
+
+	t.Run("successful: note deleted", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		mocket.Catcher.Reset().NewMock().WithRowsNum(1)
+		r.DeleteNote(rw, &http.Request{
+			Method: http.MethodDelete,
+			URL: &url.URL{
+				RawQuery: "id=23",
+			},
+		})
+
+		assert.Equal(t, http.StatusOK, rw.Code)
 	})
 }

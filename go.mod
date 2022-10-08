@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/selvatico/go-mocket v1.0.7
 	github.com/stretchr/testify v1.8.0
-	gorm.io/driver/postgres v1.4.1
+	gorm.io/driver/postgres v1.4.4
 	gorm.io/gorm v1.24.0
 )
 
