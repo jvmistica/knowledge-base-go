@@ -10,13 +10,13 @@ import (
 
 // Recipe is the structure of the recipes table
 type Recipe struct {
-	ID          uint
-	Name        string
-	Description string
-	Instruction string
-	Category    string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uint      `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Instruction string    `json:"instruction"`
+	Category    string    `json:"category"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // ListRecipes lists all the recipes in the database

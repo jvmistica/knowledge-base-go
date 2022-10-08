@@ -10,11 +10,11 @@ import (
 
 // Note is the structure of the notes table
 type Note struct {
-	ID        uint
-	Title     string
-	Content   string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uint      `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ListNotes lists all the notes in the database
