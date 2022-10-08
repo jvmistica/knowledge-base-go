@@ -4,6 +4,9 @@ format:
 test:
 	@go test -cover -v ./...
 
+cover:
+	@go test ./... -coverprofile cover.out
+
 run:
 	@go run main.go
 
