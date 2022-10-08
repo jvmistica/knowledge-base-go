@@ -1,8 +1,9 @@
 package record
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
 	"time"
 )
@@ -20,9 +21,14 @@ type Recipe struct {
 
 // ListRecipes lists all the recipes in the database
 func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	var recipes []Recipe
 	if res := re.DB.Find(&recipes); res.Error != nil {
-		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusInternalServerError)
 		return
 	}
 
@@ -34,14 +40,33 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := w.Write([]byte(records)); err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 // CreateRecipe creates a new recipe
 func (re *Record) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`Invalid method`))
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var recipe Recipe
+	if err := json.Unmarshal(body, &recipe); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	result := re.DB.Create(&recipe)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
 	}
 }

@@ -1,8 +1,9 @@
 package record
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
 	"time"
 )
@@ -18,9 +19,14 @@ type Script struct {
 
 // ListScripts lists all the scripts in the database
 func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	var scripts []Script
 	if res := re.DB.Find(&scripts); res.Error != nil {
-		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusInternalServerError)
 		return
 	}
 
@@ -32,14 +38,33 @@ func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := w.Write([]byte(records)); err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
 // CreateScript creates a new recipe
 func (re *Record) CreateScript(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`Invalid method`))
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var script Script
+	if err := json.Unmarshal(body, &script); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	result := re.DB.Create(&script)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
 	}
 }
