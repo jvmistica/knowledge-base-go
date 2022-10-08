@@ -79,7 +79,6 @@ func main() {
 func handleRequests() {
 	r := record.NewRecord(db)
 
-	http.HandleFunc(apiVersion+"/", record.GetHome)
 	http.HandleFunc(apiVersion+"/notes", r.ListNotes)
 	http.HandleFunc(apiVersion+"/recipes", r.ListRecipes)
 	http.HandleFunc(apiVersion+"/scripts", r.ListScripts)
