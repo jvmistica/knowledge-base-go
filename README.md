@@ -1,4 +1,5 @@
 # knowledge-base-go
+![Build status](https://github.com/jvmistica/knowledge-base-go/workflows/build/badge.svg)  
 A basic web application using Go.
 
 ## Environment Variables
