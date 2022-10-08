@@ -79,6 +79,11 @@ func (re *Record) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
 	result := re.DB.Where("id = ?", id).Delete(Recipe{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
@@ -91,4 +96,39 @@ func (re *Record) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// GetRecipe gets the details of a specific recipe
+func (re *Record) GetRecipe(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
+	var recipe Recipe
+	result := re.DB.Where("id = ?", id).Find(&recipe)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	details, err := json.Marshal(recipe)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(details)
 }

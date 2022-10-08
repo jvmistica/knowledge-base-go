@@ -113,6 +113,16 @@ func TestDeleteScript(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.DeleteScript(rw, &http.Request{
+			Method: http.MethodDelete,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
 	t.Run("error: record not found", func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
@@ -137,5 +147,63 @@ func TestDeleteScript(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusOK, rw.Code)
+	})
+}
+
+func TestGetScript(t *testing.T) {
+	db := setupTestDB()
+	r := &Record{DB: db}
+
+	t.Run("error: invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetScript(rw, &http.Request{Method: http.MethodPost})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
+
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetScript(rw, &http.Request{
+			Method: http.MethodGet,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
+	t.Run("error: record not found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
+		r.GetScript(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=99",
+			},
+		})
+
+		assert.Equal(t, http.StatusNotFound, rw.Code)
+	})
+
+	t.Run("successful: record found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}}
+		mocket.Catcher.Reset().NewMock().WithReply(records)
+		r.GetScript(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=123",
+			},
+		})
+		assert.Equal(t, http.StatusOK, rw.Code)
+
+		res, err := io.ReadAll(rw.Body)
+		assert.Nil(t, err)
+
+		var script Script
+		err = json.Unmarshal(res, &script)
+		assert.Nil(t, err)
+
+		assert.Equal(t, "Sample script #123", script.Name)
+		assert.Equal(t, "A bash script that does something", script.Description)
 	})
 }

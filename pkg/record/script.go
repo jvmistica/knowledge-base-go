@@ -77,6 +77,11 @@ func (re *Record) DeleteScript(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
 	result := re.DB.Where("id = ?", id).Delete(Script{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
@@ -89,4 +94,39 @@ func (re *Record) DeleteScript(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// GetScript gets the details of a specific script
+func (re *Record) GetScript(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
+	var script Script
+	result := re.DB.Where("id = ?", id).Find(&script)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	details, err := json.Marshal(script)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(details)
 }

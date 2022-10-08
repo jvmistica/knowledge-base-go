@@ -77,6 +77,11 @@ func (re *Record) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
 	result := re.DB.Where("id = ?", id).Delete(Note{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
@@ -89,4 +94,39 @@ func (re *Record) DeleteNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// GetNote gets the details of a specific note
+func (re *Record) GetNote(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "Missing query parameter: 'id'", http.StatusBadRequest)
+		return
+	}
+
+	var note Note
+	result := re.DB.Where("id = ?", id).Find(&note)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	details, err := json.Marshal(note)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(details)
 }

@@ -113,6 +113,16 @@ func TestDeleteRecipe(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.DeleteRecipe(rw, &http.Request{
+			Method: http.MethodDelete,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
 	t.Run("error: record not found", func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
@@ -137,5 +147,63 @@ func TestDeleteRecipe(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusOK, rw.Code)
+	})
+}
+
+func TestGetRecipe(t *testing.T) {
+	db := setupTestDB()
+	r := &Record{DB: db}
+
+	t.Run("error: invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetRecipe(rw, &http.Request{Method: http.MethodPost})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
+
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetRecipe(rw, &http.Request{
+			Method: http.MethodGet,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
+	t.Run("error: record not found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
+		r.GetRecipe(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=99",
+			},
+		})
+
+		assert.Equal(t, http.StatusNotFound, rw.Code)
+	})
+
+	t.Run("successful: record found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}}
+		mocket.Catcher.Reset().NewMock().WithReply(records)
+		r.GetRecipe(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=123",
+			},
+		})
+		assert.Equal(t, http.StatusOK, rw.Code)
+
+		res, err := io.ReadAll(rw.Body)
+		assert.Nil(t, err)
+
+		var recipe Recipe
+		err = json.Unmarshal(res, &recipe)
+		assert.Nil(t, err)
+
+		assert.Equal(t, "Sample recipe #123", recipe.Name)
+		assert.Equal(t, "A very delicious dish", recipe.Description)
 	})
 }

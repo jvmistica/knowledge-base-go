@@ -124,6 +124,16 @@ func TestDeleteNote(t *testing.T) {
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.DeleteNote(rw, &http.Request{
+			Method: http.MethodDelete,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
 	t.Run("error: record not found", func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
@@ -148,5 +158,63 @@ func TestDeleteNote(t *testing.T) {
 		})
 
 		assert.Equal(t, http.StatusOK, rw.Code)
+	})
+}
+
+func TestGetNote(t *testing.T) {
+	db := setupTestDB()
+	r := &Record{DB: db}
+
+	t.Run("error: invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetNote(rw, &http.Request{Method: http.MethodPost})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
+
+	t.Run("error: missing parameter", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.GetNote(rw, &http.Request{
+			Method: http.MethodGet,
+			URL:    &url.URL{},
+		})
+
+		assert.Equal(t, http.StatusBadRequest, rw.Code)
+	})
+
+	t.Run("error: record not found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
+		r.GetNote(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=99",
+			},
+		})
+
+		assert.Equal(t, http.StatusNotFound, rw.Code)
+	})
+
+	t.Run("successful: record found", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
+		mocket.Catcher.Reset().NewMock().WithReply(records)
+		r.GetNote(rw, &http.Request{
+			Method: http.MethodGet,
+			URL: &url.URL{
+				RawQuery: "id=123",
+			},
+		})
+		assert.Equal(t, http.StatusOK, rw.Code)
+
+		res, err := io.ReadAll(rw.Body)
+		assert.Nil(t, err)
+
+		var note Note
+		err = json.Unmarshal(res, &note)
+		assert.Nil(t, err)
+
+		assert.Equal(t, "Sample note #123", note.Title)
+		assert.Equal(t, "A reminder to buy a list of grocery items", note.Content)
 	})
 }

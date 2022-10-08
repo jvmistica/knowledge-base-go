@@ -79,9 +79,9 @@ func main() {
 func handleRequests() {
 	r := record.NewRecord(db)
 
-	http.HandleFunc(apiVersion+"/notes", r.ListNotes)
-	http.HandleFunc(apiVersion+"/recipes", r.ListRecipes)
-	http.HandleFunc(apiVersion+"/scripts", r.ListScripts)
+	http.HandleFunc(apiVersion+"/notes/list", r.ListNotes)
+	http.HandleFunc(apiVersion+"/recipes/list", r.ListRecipes)
+	http.HandleFunc(apiVersion+"/scripts/list", r.ListScripts)
 
 	http.HandleFunc(apiVersion+"/notes/new", r.CreateNote)
 	http.HandleFunc(apiVersion+"/recipes/new", r.CreateRecipe)
@@ -90,6 +90,10 @@ func handleRequests() {
 	http.HandleFunc(apiVersion+"/notes/delete", r.DeleteNote)
 	http.HandleFunc(apiVersion+"/recipes/delete", r.DeleteRecipe)
 	http.HandleFunc(apiVersion+"/scripts/delete", r.DeleteScript)
+
+	http.HandleFunc(apiVersion+"/notes", r.GetNote)
+	http.HandleFunc(apiVersion+"/recipes", r.GetRecipe)
+	http.HandleFunc(apiVersion+"/scripts", r.GetScript)
 
 	log.Fatal(http.ListenAndServe(":10000", nil))
 }
