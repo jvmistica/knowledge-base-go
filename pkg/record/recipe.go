@@ -32,17 +32,14 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var records string
-	if len(recipes) > 0 {
-		for _, r := range recipes {
-			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", r.Name, r.Description)
-		}
-	}
-
-	if _, err := w.Write([]byte(records)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	recipesList, err := json.Marshal(recipes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Add("content-type", "application/json")
+	w.Write(recipesList)
 }
 
 // CreateRecipe creates a new recipe

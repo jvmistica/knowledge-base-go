@@ -30,17 +30,14 @@ func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var records string
-	if len(notes) > 0 {
-		for _, n := range notes {
-			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", n.Title, n.Content)
-		}
-	}
-
-	if _, err := w.Write([]byte(records)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	notesList, err := json.Marshal(notes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Add("content-type", "application/json")
+	w.Write(notesList)
 }
 
 // CreateNote creates a new note

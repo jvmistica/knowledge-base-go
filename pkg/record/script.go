@@ -30,17 +30,14 @@ func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var records string
-	if len(scripts) > 0 {
-		for _, s := range scripts {
-			records += fmt.Sprintf("<b>%s</b></br>%s</br></br>", s.Name, s.Description)
-		}
-	}
-
-	if _, err := w.Write([]byte(records)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	scriptsList, err := json.Marshal(scripts)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Add("content-type", "application/json")
+	w.Write(scriptsList)
 }
 
 // CreateScript creates a new recipe
