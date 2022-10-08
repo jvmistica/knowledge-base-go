@@ -17,7 +17,7 @@ func TestListRecipes(t *testing.T) {
 	t.Run("successful: no records", func(t *testing.T) {
 		mocket.Catcher.Reset().NewMock().WithReply(nil)
 		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{})
+		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -28,7 +28,7 @@ func TestListRecipes(t *testing.T) {
 		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{})
+		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -40,7 +40,7 @@ func TestListRecipes(t *testing.T) {
 			{"name": "Sample recipe #234", "description": "An exotic dish"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{})
+		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)

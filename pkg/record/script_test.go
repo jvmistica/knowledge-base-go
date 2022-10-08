@@ -17,7 +17,7 @@ func TestListScripts(t *testing.T) {
 	t.Run("successful: no records", func(t *testing.T) {
 		mocket.Catcher.Reset().NewMock().WithReply(nil)
 		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{})
+		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -28,7 +28,7 @@ func TestListScripts(t *testing.T) {
 		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{})
+		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -40,7 +40,7 @@ func TestListScripts(t *testing.T) {
 			{"name": "Sample script #234", "description": "Handy SQL scripts"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{})
+		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)

@@ -28,7 +28,7 @@ func TestListNotes(t *testing.T) {
 	t.Run("successful: no records", func(t *testing.T) {
 		mocket.Catcher.Reset().NewMock().WithReply(nil)
 		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{})
+		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -39,7 +39,7 @@ func TestListNotes(t *testing.T) {
 		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{})
+		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
@@ -51,7 +51,7 @@ func TestListNotes(t *testing.T) {
 			{"title": "Sample note #234", "content": "Notes on how to do something"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{})
+		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
