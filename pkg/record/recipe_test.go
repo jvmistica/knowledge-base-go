@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	mocket "github.com/selvatico/go-mocket"
@@ -13,6 +14,13 @@ import (
 func TestListRecipes(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
+
+	t.Run("error: no invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.ListRecipes(rw, &http.Request{Method: http.MethodPost})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
 
 	t.Run("successful: no records", func(t *testing.T) {
 		mocket.Catcher.Reset().NewMock().WithReply(nil)
@@ -45,5 +53,28 @@ func TestListRecipes(t *testing.T) {
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
 		assert.Equal(t, "<b>Sample recipe #123</b></br>A very delicious dish</br></br><b>Sample recipe #234</b></br>An exotic dish</br></br>", string(res))
+	})
+}
+
+func TestCreateRecipe(t *testing.T) {
+	db := setupTestDB()
+	r := &Record{DB: db}
+
+	t.Run("error: no invalid method", func(t *testing.T) {
+		rw := httptest.NewRecorder()
+		r.CreateRecipe(rw, &http.Request{Method: http.MethodGet})
+
+		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
+	})
+
+	t.Run("successful: one record", func(t *testing.T) {
+		req := io.NopCloser(strings.NewReader(`{"name": "Sample recipe #345", "description": "A soup dish"}`))
+		rw := httptest.NewRecorder()
+		r.CreateRecipe(rw, &http.Request{
+			Method: http.MethodPost,
+			Body:   req,
+		})
+
+		assert.Equal(t, http.StatusCreated, rw.Code)
 	})
 }

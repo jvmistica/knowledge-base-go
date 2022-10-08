@@ -67,4 +67,6 @@ func (re *Record) CreateScript(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
 }
