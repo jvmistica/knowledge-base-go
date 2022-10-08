@@ -52,6 +52,7 @@ func (re *Record) CreateScript(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	var script Script
 	if err := json.Unmarshal(body, &script); err != nil {

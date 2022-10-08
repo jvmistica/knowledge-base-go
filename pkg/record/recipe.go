@@ -54,6 +54,7 @@ func (re *Record) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	var recipe Recipe
 	if err := json.Unmarshal(body, &recipe); err != nil {

@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +30,12 @@ func TestListScripts(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "", string(res))
+
+		var scripts []Script
+		err = json.Unmarshal(res, &scripts)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 0, len(scripts))
 	})
 
 	t.Run("successful: one record", func(t *testing.T) {
@@ -40,7 +46,14 @@ func TestListScripts(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample script #123</b></br>A bash script that does something</br></br>", string(res))
+
+		var scripts []Script
+		err = json.Unmarshal(res, &scripts)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 1, len(scripts))
+		assert.Equal(t, "Sample script #123", scripts[0].Name)
+		assert.Equal(t, "A bash script that does something", scripts[0].Description)
 	})
 
 	t.Run("successful: multiple records", func(t *testing.T) {
@@ -52,7 +65,16 @@ func TestListScripts(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample script #123</b></br>A bash script that does something</br></br><b>Sample script #234</b></br>Handy SQL scripts</br></br>", string(res))
+
+		var scripts []Script
+		err = json.Unmarshal(res, &scripts)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 2, len(scripts))
+		assert.Equal(t, "Sample script #123", scripts[0].Name)
+		assert.Equal(t, "A bash script that does something", scripts[0].Description)
+		assert.Equal(t, "Sample script #234", scripts[1].Name)
+		assert.Equal(t, "Handy SQL scripts", scripts[1].Description)
 	})
 }
 

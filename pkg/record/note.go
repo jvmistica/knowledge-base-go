@@ -52,6 +52,7 @@ func (re *Record) CreateNote(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	var note Note
 	if err := json.Unmarshal(body, &note); err != nil {

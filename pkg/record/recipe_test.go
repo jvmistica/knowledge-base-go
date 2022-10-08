@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -29,7 +30,12 @@ func TestListRecipes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "", string(res))
+
+		var recipes []Recipe
+		err = json.Unmarshal(res, &recipes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 0, len(recipes))
 	})
 
 	t.Run("successful: one record", func(t *testing.T) {
@@ -40,7 +46,14 @@ func TestListRecipes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample recipe #123</b></br>A very delicious dish</br></br>", string(res))
+
+		var recipes []Recipe
+		err = json.Unmarshal(res, &recipes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 1, len(recipes))
+		assert.Equal(t, "Sample recipe #123", recipes[0].Name)
+		assert.Equal(t, "A very delicious dish", recipes[0].Description)
 	})
 
 	t.Run("successful: multiple records", func(t *testing.T) {
@@ -52,7 +65,16 @@ func TestListRecipes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample recipe #123</b></br>A very delicious dish</br></br><b>Sample recipe #234</b></br>An exotic dish</br></br>", string(res))
+
+		var recipes []Recipe
+		err = json.Unmarshal(res, &recipes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 2, len(recipes))
+		assert.Equal(t, "Sample recipe #123", recipes[0].Name)
+		assert.Equal(t, "A very delicious dish", recipes[0].Description)
+		assert.Equal(t, "Sample recipe #234", recipes[1].Name)
+		assert.Equal(t, "An exotic dish", recipes[1].Description)
 	})
 }
 

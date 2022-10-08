@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +41,12 @@ func TestListNotes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "", string(res))
+
+		var notes []Note
+		err = json.Unmarshal(res, &notes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 0, len(notes))
 	})
 
 	t.Run("successful: one record", func(t *testing.T) {
@@ -51,7 +57,14 @@ func TestListNotes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample note #123</b></br>A reminder to buy a list of grocery items</br></br>", string(res))
+
+		var notes []Note
+		err = json.Unmarshal(res, &notes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 1, len(notes))
+		assert.Equal(t, "Sample note #123", notes[0].Title)
+		assert.Equal(t, "A reminder to buy a list of grocery items", notes[0].Content)
 	})
 
 	t.Run("successful: multiple records", func(t *testing.T) {
@@ -63,7 +76,16 @@ func TestListNotes(t *testing.T) {
 
 		res, err := io.ReadAll(rw.Body)
 		assert.Nil(t, err)
-		assert.Equal(t, "<b>Sample note #123</b></br>A reminder to buy a list of grocery items</br></br><b>Sample note #234</b></br>Notes on how to do something</br></br>", string(res))
+
+		var notes []Note
+		err = json.Unmarshal(res, &notes)
+		assert.Nil(t, err)
+
+		assert.Equal(t, 2, len(notes))
+		assert.Equal(t, "Sample note #123", notes[0].Title)
+		assert.Equal(t, "A reminder to buy a list of grocery items", notes[0].Content)
+		assert.Equal(t, "Sample note #234", notes[1].Title)
+		assert.Equal(t, "Notes on how to do something", notes[1].Content)
 	})
 }
 
