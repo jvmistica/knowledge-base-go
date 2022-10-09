@@ -84,7 +84,7 @@ func (re *Record) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Where("id = ?", id).Delete(Recipe{})
+	result := re.DB.Where(filterByID, id).Delete(Recipe{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -112,7 +112,7 @@ func (re *Record) GetRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var recipe Recipe
-	result := re.DB.Where("id = ?", id).Find(&recipe)
+	result := re.DB.Where(filterByID, id).Find(&recipe)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -153,7 +153,7 @@ func (re *Record) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Model(&Recipe{}).Where("id = ?", recipe.ID).Updates(recipe)
+	result := re.DB.Model(&Recipe{}).Where(filterByID, recipe.ID).Updates(recipe)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return

@@ -82,7 +82,7 @@ func (re *Record) DeleteScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Where("id = ?", id).Delete(Script{})
+	result := re.DB.Where(filterByID, id).Delete(Script{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -110,7 +110,7 @@ func (re *Record) GetScript(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var script Script
-	result := re.DB.Where("id = ?", id).Find(&script)
+	result := re.DB.Where(filterByID, id).Find(&script)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -151,7 +151,7 @@ func (re *Record) UpdateScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Model(&Script{}).Where("id = ?", script.ID).Updates(script)
+	result := re.DB.Model(&Script{}).Where(filterByID, script.ID).Updates(script)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return

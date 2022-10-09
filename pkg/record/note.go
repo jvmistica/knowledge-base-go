@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	filterByID = "id = ?"
+)
+
 // Note is the structure of the notes table
 type Note struct {
 	ID        uint      `json:"id"`
@@ -82,7 +86,7 @@ func (re *Record) DeleteNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Where("id = ?", id).Delete(Note{})
+	result := re.DB.Where(filterByID, id).Delete(Note{})
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -110,7 +114,7 @@ func (re *Record) GetNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var note Note
-	result := re.DB.Where("id = ?", id).Find(&note)
+	result := re.DB.Where(filterByID, id).Find(&note)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
@@ -151,7 +155,7 @@ func (re *Record) UpdateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := re.DB.Model(&Note{}).Where("id = ?", note.ID).Updates(note)
+	result := re.DB.Model(&Note{}).Where(filterByID, note.ID).Updates(note)
 	if result.Error != nil {
 		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
