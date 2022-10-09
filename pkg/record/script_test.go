@@ -13,6 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testScript = []map[string]interface{}{
+		{"name": "Sample script #123", "description": "A bash script that does something"},
+		{"name": "Sample script #234", "description": "Handy SQL scripts"},
+	}
+)
+
 func TestListScripts(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
@@ -40,15 +47,14 @@ func TestListScripts(t *testing.T) {
 		},
 		successOneRecord: {
 			method:             http.MethodGet,
-			dbResult:           []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}},
+			dbResult:           []map[string]interface{}{testScript[0]},
 			wantErr:            false,
 			expectedCount:      1,
 			expectedStatusCode: http.StatusOK,
 		},
 		successMultRecords: {
-			method: http.MethodGet,
-			dbResult: []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"},
-				{"name": "Sample script #234", "description": "Handy SQL scripts"}},
+			method:             http.MethodGet,
+			dbResult:           testScript,
 			wantErr:            false,
 			expectedCount:      2,
 			expectedStatusCode: http.StatusOK,
@@ -188,7 +194,7 @@ func TestGetScript(t *testing.T) {
 
 	t.Run(successRecordFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
-		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}}
+		records := []map[string]interface{}{testScript[0]}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		r.GetScript(rw, &http.Request{
 			Method: http.MethodGet,

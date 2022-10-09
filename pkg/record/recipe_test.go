@@ -13,6 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	testRecipe = []map[string]interface{}{
+		{"name": "Sample recipe #123", "description": "A very delicious dish"},
+		{"name": "Sample recipe #234", "description": "An exotic dish"},
+	}
+)
+
 func TestListRecipes(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
@@ -40,15 +47,14 @@ func TestListRecipes(t *testing.T) {
 		},
 		successOneRecord: {
 			method:             http.MethodGet,
-			dbResult:           []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}},
+			dbResult:           []map[string]interface{}{testRecipe[0]},
 			wantErr:            false,
 			expectedCount:      1,
 			expectedStatusCode: http.StatusOK,
 		},
 		successMultRecords: {
-			method: http.MethodGet,
-			dbResult: []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"},
-				{"name": "Sample recipe #234", "description": "An exotic dish"}},
+			method:             http.MethodGet,
+			dbResult:           testRecipe,
 			wantErr:            false,
 			expectedCount:      2,
 			expectedStatusCode: http.StatusOK,
@@ -189,7 +195,7 @@ func TestGetRecipe(t *testing.T) {
 
 	t.Run(successRecordFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
-		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}}
+		records := []map[string]interface{}{testRecipe[0]}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		r.GetRecipe(rw, &http.Request{
 			Method: http.MethodGet,

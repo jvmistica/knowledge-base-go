@@ -27,6 +27,13 @@ const (
 	successRecordDeleted = "successful: record deleted"
 )
 
+var (
+	testNote = []map[string]interface{}{
+		{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
+		{"title": "Sample note #234", "content": "Note on how to do something"},
+	}
+)
+
 func setupTestDB() *gorm.DB {
 	mocket.Catcher.Register()
 	db, _ := gorm.Open(postgres.New(postgres.Config{
@@ -63,15 +70,14 @@ func TestListNotes(t *testing.T) {
 		},
 		successOneRecord: {
 			method:             http.MethodGet,
-			dbResult:           []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}},
+			dbResult:           []map[string]interface{}{testNote[0]},
 			wantErr:            false,
 			expectedCount:      1,
 			expectedStatusCode: http.StatusOK,
 		},
 		successMultRecords: {
-			method: http.MethodGet,
-			dbResult: []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
-				{"title": "Sample note #234", "content": "Notes on how to do something"}},
+			method:             http.MethodGet,
+			dbResult:           testNote,
 			wantErr:            false,
 			expectedCount:      2,
 			expectedStatusCode: http.StatusOK,
@@ -211,7 +217,7 @@ func TestGetNote(t *testing.T) {
 
 	t.Run(successRecordFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
-		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
+		records := []map[string]interface{}{testNote[0]}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
 		r.GetNote(rw, &http.Request{
 			Method: http.MethodGet,
