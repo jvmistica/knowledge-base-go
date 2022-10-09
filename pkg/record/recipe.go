@@ -27,8 +27,8 @@ func (re *Record) ListRecipes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var recipes []Recipe
-	if res := re.DB.Find(&recipes); res.Error != nil {
-		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusInternalServerError)
+	if result := re.DB.Find(&recipes); result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
 	}
 

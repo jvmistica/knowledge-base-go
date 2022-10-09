@@ -29,8 +29,8 @@ func (re *Record) ListNotes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var notes []Note
-	if res := re.DB.Find(&notes); res.Error != nil {
-		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusInternalServerError)
+	if result := re.DB.Find(&notes); result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
 	}
 

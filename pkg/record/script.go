@@ -25,8 +25,8 @@ func (re *Record) ListScripts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var scripts []Script
-	if res := re.DB.Find(&scripts); res.Error != nil {
-		http.Error(w, fmt.Sprintf("%s", res.Error), http.StatusInternalServerError)
+	if result := re.DB.Find(&scripts); result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
 		return
 	}
 

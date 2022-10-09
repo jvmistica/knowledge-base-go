@@ -28,66 +28,68 @@ func TestListNotes(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
-		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{Method: http.MethodPost})
+	tests := map[string]struct {
+		method             string
+		dbResult           []map[string]interface{}
+		wantErr            bool
+		expectedCount      int
+		expectedStatusCode int
+	}{
+		"error: invalid method": {
+			method:             http.MethodPost,
+			dbResult:           nil,
+			wantErr:            true,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusMethodNotAllowed,
+		},
+		"successful: no records": {
+			method:             http.MethodGet,
+			dbResult:           nil,
+			wantErr:            false,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: one record": {
+			method:             http.MethodGet,
+			dbResult:           []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}},
+			wantErr:            false,
+			expectedCount:      1,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: multiple records": {
+			method: http.MethodGet,
+			dbResult: []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
+				{"title": "Sample note #234", "content": "Notes on how to do something"}},
+			wantErr:            false,
+			expectedCount:      2,
+			expectedStatusCode: http.StatusOK,
+		},
+	}
 
-		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
-	})
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			mocket.Catcher.Reset().NewMock().WithReply(test.dbResult)
+			rw := httptest.NewRecorder()
 
-	t.Run("successful: no records", func(t *testing.T) {
-		mocket.Catcher.Reset().NewMock().WithReply(nil)
-		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
+			r.ListNotes(rw, &http.Request{Method: test.method})
+			assert.Equal(t, test.expectedStatusCode, rw.Code)
 
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
+			if !test.wantErr {
+				result, err := io.ReadAll(rw.Body)
+				assert.Nil(t, err)
 
-		var notes []Note
-		err = json.Unmarshal(res, &notes)
-		assert.Nil(t, err)
+				var notes []Note
+				err = json.Unmarshal(result, &notes)
+				assert.Nil(t, err)
+				assert.Equal(t, test.expectedCount, len(notes))
 
-		assert.Equal(t, 0, len(notes))
-	})
-
-	t.Run("successful: one record", func(t *testing.T) {
-		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var notes []Note
-		err = json.Unmarshal(res, &notes)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 1, len(notes))
-		assert.Equal(t, "Sample note #123", notes[0].Title)
-		assert.Equal(t, "A reminder to buy a list of grocery items", notes[0].Content)
-	})
-
-	t.Run("successful: multiple records", func(t *testing.T) {
-		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
-			{"title": "Sample note #234", "content": "Notes on how to do something"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListNotes(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var notes []Note
-		err = json.Unmarshal(res, &notes)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 2, len(notes))
-		assert.Equal(t, "Sample note #123", notes[0].Title)
-		assert.Equal(t, "A reminder to buy a list of grocery items", notes[0].Content)
-		assert.Equal(t, "Sample note #234", notes[1].Title)
-		assert.Equal(t, "Notes on how to do something", notes[1].Content)
-	})
+				for i, note := range notes {
+					assert.Equal(t, test.dbResult[i]["title"], note.Title)
+					assert.Equal(t, test.dbResult[i]["content"], note.Content)
+				}
+			}
+		})
+	}
 }
 
 func TestCreateNote(t *testing.T) {

@@ -17,66 +17,68 @@ func TestListScripts(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
-		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{Method: http.MethodPost})
+	tests := map[string]struct {
+		method             string
+		dbResult           []map[string]interface{}
+		wantErr            bool
+		expectedCount      int
+		expectedStatusCode int
+	}{
+		"error: invalid method": {
+			method:             http.MethodPost,
+			dbResult:           nil,
+			wantErr:            true,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusMethodNotAllowed,
+		},
+		"successful: no records": {
+			method:             http.MethodGet,
+			dbResult:           nil,
+			wantErr:            false,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: one record": {
+			method:             http.MethodGet,
+			dbResult:           []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}},
+			wantErr:            false,
+			expectedCount:      1,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: multiple records": {
+			method: http.MethodGet,
+			dbResult: []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"},
+				{"name": "Sample script #234", "description": "Handy SQL scripts"}},
+			wantErr:            false,
+			expectedCount:      2,
+			expectedStatusCode: http.StatusOK,
+		},
+	}
 
-		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
-	})
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			mocket.Catcher.Reset().NewMock().WithReply(test.dbResult)
+			rw := httptest.NewRecorder()
 
-	t.Run("successful: no records", func(t *testing.T) {
-		mocket.Catcher.Reset().NewMock().WithReply(nil)
-		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
+			r.ListScripts(rw, &http.Request{Method: test.method})
+			assert.Equal(t, test.expectedStatusCode, rw.Code)
 
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
+			if !test.wantErr {
+				result, err := io.ReadAll(rw.Body)
+				assert.Nil(t, err)
 
-		var scripts []Script
-		err = json.Unmarshal(res, &scripts)
-		assert.Nil(t, err)
+				var scripts []Script
+				err = json.Unmarshal(result, &scripts)
+				assert.Nil(t, err)
+				assert.Equal(t, test.expectedCount, len(scripts))
 
-		assert.Equal(t, 0, len(scripts))
-	})
-
-	t.Run("successful: one record", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var scripts []Script
-		err = json.Unmarshal(res, &scripts)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 1, len(scripts))
-		assert.Equal(t, "Sample script #123", scripts[0].Name)
-		assert.Equal(t, "A bash script that does something", scripts[0].Description)
-	})
-
-	t.Run("successful: multiple records", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"},
-			{"name": "Sample script #234", "description": "Handy SQL scripts"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListScripts(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var scripts []Script
-		err = json.Unmarshal(res, &scripts)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 2, len(scripts))
-		assert.Equal(t, "Sample script #123", scripts[0].Name)
-		assert.Equal(t, "A bash script that does something", scripts[0].Description)
-		assert.Equal(t, "Sample script #234", scripts[1].Name)
-		assert.Equal(t, "Handy SQL scripts", scripts[1].Description)
-	})
+				for i, script := range scripts {
+					assert.Equal(t, test.dbResult[i]["name"], script.Name)
+					assert.Equal(t, test.dbResult[i]["description"], script.Description)
+				}
+			}
+		})
+	}
 }
 
 func TestCreateScript(t *testing.T) {

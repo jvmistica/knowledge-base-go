@@ -17,66 +17,69 @@ func TestListRecipes(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
-		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{Method: http.MethodPost})
+	tests := map[string]struct {
+		method             string
+		dbResult           []map[string]interface{}
+		wantErr            bool
+		expectedCount      int
+		expectedStatusCode int
+	}{
+		"error: invalid method": {
+			method:             http.MethodPost,
+			dbResult:           nil,
+			wantErr:            true,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusMethodNotAllowed,
+		},
+		"successful: no records": {
+			method:             http.MethodGet,
+			dbResult:           nil,
+			wantErr:            false,
+			expectedCount:      0,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: one record": {
+			method:             http.MethodGet,
+			dbResult:           []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}},
+			wantErr:            false,
+			expectedCount:      1,
+			expectedStatusCode: http.StatusOK,
+		},
+		"successful: multiple records": {
+			method: http.MethodGet,
+			dbResult: []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"},
+				{"name": "Sample recipe #234", "description": "An exotic dish"}},
+			wantErr:            false,
+			expectedCount:      2,
+			expectedStatusCode: http.StatusOK,
+		},
+	}
 
-		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
-	})
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			mocket.Catcher.Reset().NewMock().WithReply(test.dbResult)
+			rw := httptest.NewRecorder()
 
-	t.Run("successful: no records", func(t *testing.T) {
-		mocket.Catcher.Reset().NewMock().WithReply(nil)
-		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
+			r.ListRecipes(rw, &http.Request{Method: test.method})
+			assert.Equal(t, test.expectedStatusCode, rw.Code)
 
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
+			if !test.wantErr {
+				result, err := io.ReadAll(rw.Body)
+				assert.Nil(t, err)
 
-		var recipes []Recipe
-		err = json.Unmarshal(res, &recipes)
-		assert.Nil(t, err)
+				var recipes []Recipe
+				err = json.Unmarshal(result, &recipes)
+				assert.Nil(t, err)
+				assert.Equal(t, test.expectedCount, len(recipes))
 
-		assert.Equal(t, 0, len(recipes))
-	})
+				for i, recipe := range recipes {
+					assert.Equal(t, test.dbResult[i]["name"], recipe.Name)
+					assert.Equal(t, test.dbResult[i]["description"], recipe.Description)
+				}
+			}
+		})
+	}
 
-	t.Run("successful: one record", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var recipes []Recipe
-		err = json.Unmarshal(res, &recipes)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 1, len(recipes))
-		assert.Equal(t, "Sample recipe #123", recipes[0].Name)
-		assert.Equal(t, "A very delicious dish", recipes[0].Description)
-	})
-
-	t.Run("successful: multiple records", func(t *testing.T) {
-		records := []map[string]interface{}{{"name": "Sample recipe #123", "description": "A very delicious dish"},
-			{"name": "Sample recipe #234", "description": "An exotic dish"}}
-		mocket.Catcher.Reset().NewMock().WithReply(records)
-		rw := httptest.NewRecorder()
-		r.ListRecipes(rw, &http.Request{Method: http.MethodGet})
-
-		res, err := io.ReadAll(rw.Body)
-		assert.Nil(t, err)
-
-		var recipes []Recipe
-		err = json.Unmarshal(res, &recipes)
-		assert.Nil(t, err)
-
-		assert.Equal(t, 2, len(recipes))
-		assert.Equal(t, "Sample recipe #123", recipes[0].Name)
-		assert.Equal(t, "A very delicious dish", recipes[0].Description)
-		assert.Equal(t, "Sample recipe #234", recipes[1].Name)
-		assert.Equal(t, "An exotic dish", recipes[1].Description)
-	})
 }
 
 func TestCreateRecipe(t *testing.T) {
