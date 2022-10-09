@@ -1,6 +1,6 @@
 # knowledge-base-go
 ![Build status](https://github.com/jvmistica/knowledge-base-go/workflows/knowledge-base-go/badge.svg)  
-A basic web application using Go.
+A collection of knowledge base APIs.
 
 ## Environment Variables
 ```
