@@ -24,28 +24,28 @@ func TestListScripts(t *testing.T) {
 		expectedCount      int
 		expectedStatusCode int
 	}{
-		"error: invalid method": {
+		errInvalidMethod: {
 			method:             http.MethodPost,
 			dbResult:           nil,
 			wantErr:            true,
 			expectedCount:      0,
 			expectedStatusCode: http.StatusMethodNotAllowed,
 		},
-		"successful: no records": {
+		successNoRecord: {
 			method:             http.MethodGet,
 			dbResult:           nil,
 			wantErr:            false,
 			expectedCount:      0,
 			expectedStatusCode: http.StatusOK,
 		},
-		"successful: one record": {
+		successOneRecord: {
 			method:             http.MethodGet,
 			dbResult:           []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}},
 			wantErr:            false,
 			expectedCount:      1,
 			expectedStatusCode: http.StatusOK,
 		},
-		"successful: multiple records": {
+		successMultRecords: {
 			method: http.MethodGet,
 			dbResult: []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"},
 				{"name": "Sample script #234", "description": "Handy SQL scripts"}},
@@ -85,14 +85,14 @@ func TestCreateScript(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.CreateScript(rw, &http.Request{Method: http.MethodGet})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("successful: one record", func(t *testing.T) {
+	t.Run(successOneRecord, func(t *testing.T) {
 		req := io.NopCloser(strings.NewReader(`{"name": "Sample script #345", "description": "Automation script"}`))
 		rw := httptest.NewRecorder()
 		r.CreateScript(rw, &http.Request{
@@ -108,14 +108,14 @@ func TestDeleteScript(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.DeleteScript(rw, &http.Request{Method: http.MethodPost})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("error: missing parameter", func(t *testing.T) {
+	t.Run(errMissingParam, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.DeleteScript(rw, &http.Request{
 			Method: http.MethodDelete,
@@ -125,7 +125,7 @@ func TestDeleteScript(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rw.Code)
 	})
 
-	t.Run("error: record not found", func(t *testing.T) {
+	t.Run(errRecordNotFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
 		r.DeleteScript(rw, &http.Request{
@@ -138,7 +138,7 @@ func TestDeleteScript(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
-	t.Run("successful: script deleted", func(t *testing.T) {
+	t.Run(successRecordDeleted, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(1)
 		r.DeleteScript(rw, &http.Request{
@@ -156,14 +156,14 @@ func TestGetScript(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.GetScript(rw, &http.Request{Method: http.MethodPost})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("error: missing parameter", func(t *testing.T) {
+	t.Run(errMissingParam, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.GetScript(rw, &http.Request{
 			Method: http.MethodGet,
@@ -173,7 +173,7 @@ func TestGetScript(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rw.Code)
 	})
 
-	t.Run("error: record not found", func(t *testing.T) {
+	t.Run(errRecordNotFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
 		r.GetScript(rw, &http.Request{
@@ -186,7 +186,7 @@ func TestGetScript(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
-	t.Run("successful: record found", func(t *testing.T) {
+	t.Run(successRecordFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		records := []map[string]interface{}{{"name": "Sample script #123", "description": "A bash script that does something"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)

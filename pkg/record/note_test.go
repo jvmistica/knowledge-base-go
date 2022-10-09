@@ -15,6 +15,18 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	errInvalidMethod  = "error: invalid method"
+	errMissingParam   = "error: missing parameter"
+	errRecordNotFound = "error: record not found"
+
+	successNoRecord      = "successful: no records"
+	successOneRecord     = "successful: one record"
+	successMultRecords   = "successful: multiple records"
+	successRecordFound   = "successful: record found"
+	successRecordDeleted = "successful: record deleted"
+)
+
 func setupTestDB() *gorm.DB {
 	mocket.Catcher.Register()
 	db, _ := gorm.Open(postgres.New(postgres.Config{
@@ -35,28 +47,28 @@ func TestListNotes(t *testing.T) {
 		expectedCount      int
 		expectedStatusCode int
 	}{
-		"error: invalid method": {
+		errInvalidMethod: {
 			method:             http.MethodPost,
 			dbResult:           nil,
 			wantErr:            true,
 			expectedCount:      0,
 			expectedStatusCode: http.StatusMethodNotAllowed,
 		},
-		"successful: no records": {
+		successNoRecord: {
 			method:             http.MethodGet,
 			dbResult:           nil,
 			wantErr:            false,
 			expectedCount:      0,
 			expectedStatusCode: http.StatusOK,
 		},
-		"successful: one record": {
+		successOneRecord: {
 			method:             http.MethodGet,
 			dbResult:           []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}},
 			wantErr:            false,
 			expectedCount:      1,
 			expectedStatusCode: http.StatusOK,
 		},
-		"successful: multiple records": {
+		successMultRecords: {
 			method: http.MethodGet,
 			dbResult: []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"},
 				{"title": "Sample note #234", "content": "Notes on how to do something"}},
@@ -96,14 +108,14 @@ func TestCreateNote(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.CreateNote(rw, &http.Request{Method: http.MethodGet})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("successful: one record", func(t *testing.T) {
+	t.Run(successOneRecord, func(t *testing.T) {
 		req := io.NopCloser(strings.NewReader(`{"title": "Sample note #345", "content": "Grocery list"}`))
 		rw := httptest.NewRecorder()
 		r.CreateNote(rw, &http.Request{
@@ -119,14 +131,14 @@ func TestDeleteNote(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.DeleteNote(rw, &http.Request{Method: http.MethodPost})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("error: missing parameter", func(t *testing.T) {
+	t.Run(errMissingParam, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.DeleteNote(rw, &http.Request{
 			Method: http.MethodDelete,
@@ -136,7 +148,7 @@ func TestDeleteNote(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rw.Code)
 	})
 
-	t.Run("error: record not found", func(t *testing.T) {
+	t.Run(errRecordNotFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
 		r.DeleteNote(rw, &http.Request{
@@ -149,7 +161,7 @@ func TestDeleteNote(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
-	t.Run("successful: note deleted", func(t *testing.T) {
+	t.Run(successRecordDeleted, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(1)
 		r.DeleteNote(rw, &http.Request{
@@ -167,14 +179,14 @@ func TestGetNote(t *testing.T) {
 	db := setupTestDB()
 	r := &Record{DB: db}
 
-	t.Run("error: invalid method", func(t *testing.T) {
+	t.Run(errInvalidMethod, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.GetNote(rw, &http.Request{Method: http.MethodPost})
 
 		assert.Equal(t, http.StatusMethodNotAllowed, rw.Code)
 	})
 
-	t.Run("error: missing parameter", func(t *testing.T) {
+	t.Run(errMissingParam, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		r.GetNote(rw, &http.Request{
 			Method: http.MethodGet,
@@ -184,7 +196,7 @@ func TestGetNote(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rw.Code)
 	})
 
-	t.Run("error: record not found", func(t *testing.T) {
+	t.Run(errRecordNotFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		mocket.Catcher.Reset().NewMock().WithRowsNum(0)
 		r.GetNote(rw, &http.Request{
@@ -197,7 +209,7 @@ func TestGetNote(t *testing.T) {
 		assert.Equal(t, http.StatusNotFound, rw.Code)
 	})
 
-	t.Run("successful: record found", func(t *testing.T) {
+	t.Run(successRecordFound, func(t *testing.T) {
 		rw := httptest.NewRecorder()
 		records := []map[string]interface{}{{"title": "Sample note #123", "content": "A reminder to buy a list of grocery items"}}
 		mocket.Catcher.Reset().NewMock().WithReply(records)
