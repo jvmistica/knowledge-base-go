@@ -130,3 +130,32 @@ func (re *Record) GetNote(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(details)
 }
+
+// UpdateNote updates an existing note
+func (re *Record) UpdateNote(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	var note Note
+	if err := json.Unmarshal(body, &note); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	result := re.DB.Model(&Note{}).Where("id = ?", note.ID).Updates(note)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

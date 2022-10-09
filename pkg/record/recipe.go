@@ -132,3 +132,32 @@ func (re *Record) GetRecipe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(details)
 }
+
+// UpdateRecipe updates an existing recipe
+func (re *Record) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	var recipe Recipe
+	if err := json.Unmarshal(body, &recipe); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	result := re.DB.Model(&Recipe{}).Where("id = ?", recipe.ID).Updates(recipe)
+	if result.Error != nil {
+		http.Error(w, fmt.Sprintf("%s", result.Error), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
