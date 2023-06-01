@@ -15,3 +15,6 @@ build:
 
 install:
 	@go install -v ./...
+
+vulncheck:
+	@govulncheck ./...
