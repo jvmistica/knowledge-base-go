@@ -1,4 +1,4 @@
-name: henchmaid
+name: knowledge-base-go
 
 on:
   push:
