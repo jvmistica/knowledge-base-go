@@ -1,4 +1,4 @@
-name: knowledge-base-go
+name: build
 
 on:
   push:
