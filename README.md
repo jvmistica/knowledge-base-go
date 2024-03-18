@@ -1,5 +1,6 @@
 # knowledge-base-go
 ![Build status](https://github.com/jvmistica/knowledge-base-go/workflows/build/badge.svg)
+
 A collection of knowledge base APIs.
 
 ## Environment Variables
